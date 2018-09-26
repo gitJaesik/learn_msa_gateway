@@ -16,45 +16,50 @@ import reactor.core.publisher.Mono;
 @RestController
 public class MgatewayApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(MgatewayApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(MgatewayApplication.class, args);
+    }
 
-	@Bean
-	public RouteLocator myRoutes(RouteLocatorBuilder builder, UriConfiguration uriConfiguration) {
-		String httpUri = uriConfiguration.getHttpbin();
-		return builder.routes()
-				.route(p -> p
-						.path("/get")
-						.filters(f -> f.addRequestHeader("Hello", "World"))
-						.uri(httpUri))
-				.route(p -> p
-						.host("*.hystrix.com")
-						.filters(f -> f
-								.hystrix(config -> config
-										.setName("mycmd")
-										.setFallbackUri("forward:/fallback")))
-						.uri(httpUri))
-				.build();
-	}
+    //	public RouteLocator myRoutes(RouteLocatorBuilder builder) {
+    @Bean
+    public RouteLocator myRoutes(RouteLocatorBuilder builder, UriConfiguration uriConfiguration) {
+        String httpUri = uriConfiguration.getHttpbin();
 
-	@RequestMapping("/fallback")
+        return builder.routes()
+                .route(p -> p
+                        .path("/get")
+                        .filters(f -> f
+                                .addRequestHeader("Hello", "World"))
+//                        .uri("http://httpbin.org:80"))
+                        .uri(httpUri))
+                .route(p -> p
+                        .host("*.hystrix.com")
+                        .filters(f -> f.hystrix(config -> config
+                                .setName("mycmd")
+                                .setFallbackUri("forward:/fallback")))
+//					.filters(f->f.hystrix(config->config.setName("mycmd")))	// just circuit breaking
+//                        .uri("http://httpbin.org:80"))
+                        .uri(httpUri))
+                .build();
+    }
+
+    @RequestMapping("/fallback")
     public Mono<String> fallback() {
-	    return Mono.just("fallback");
-	}
+        return Mono.just("fallback");
+    }
 
-	@ConfigurationProperties
-	class UriConfiguration {
-		private String httpbin = "http://httpbin.org:80";
+    @ConfigurationProperties
+    class UriConfiguration {
+        private String httpbin = "http://httpbin.org:80";
 
-		public String getHttpbin() {
-			return httpbin;
-		}
+        public String getHttpbin() {
+            return httpbin;
+        }
 
-		public void setHttpbin(String httpbin) {
-		    this.httpbin = httpbin;
-		}
-	}
+        public void setHttpbin(String httpbin) {
+            this.httpbin = httpbin;
+        }
+    }
 
 }
 

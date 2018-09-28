@@ -23,7 +23,7 @@ public class MgatewayApplication {
     //	public RouteLocator myRoutes(RouteLocatorBuilder builder) {
     @Bean
     public RouteLocator myRoutes(RouteLocatorBuilder builder, UriConfiguration uriConfiguration) {
-        String httpUri = uriConfiguration.getHttpbin();
+        String httpUri = "http://localhost:8080/";
 
         return builder.routes()
                 .route(p -> p
